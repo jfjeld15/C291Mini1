@@ -6,15 +6,47 @@ Jonathan Fjeld, Ying Wan, Crystal Zhang
 
 import sqlite3
 import sys  # For taking command line argument
+from getpass import getpass  # For making the password non-visible at the time of typing
 
-def setupTables(dbName):
+def setup(dbName):
+    # connects to an sql db, returns a cursor and conection variables
     conn = sqlite3.connect(dbName)
     c = conn.cursor()
     return conn, c
 
+def getID():
+    # Loops until user/artist enters a valid ID (under 4 characters)
+    valid = False
+    while not valid:
+        id = input("Enter user/artist ID: ").lower()  # Lower for case insensitivity
+        if len(id) <= 4 and len(id) > 0:
+            valid = True
+        else:
+            print("Please enter a valid ID (between 1-4 characters)") # Loop again
+    return id
+
+def login(id, c, conn):
+    isUser = False
+    isArtist = False
+    pw = getpass("Enter password:")  # Non-visible password at the time of typing
+
+    # Checks if a user/artist with id exists, and gets password if it does, otherwise create password.
+    c.execute('SELECT * FROM users WHERE uid = ?;', id,)
+    if len(c.fetchall()) != 0:
+        isUser = True
+    c.execute('SELECT * FROM artists WHERE aid = ?;', id,)
+    if len(c.fetchall()) != 0:
+        isArtist = True
+    if isUser == False and isArtist == False:
+
+
 if __name__ == "__main__":
-    dbName = sys.argv[1]
-    conn, c = setupTables(dbName)
-    c.execute("SELECT * FROM users;")
-    rows = c.fetchall()
-    print(rows)
+    exit = False
+    loggedIn = False
+    conn, c = setup(sys.argv[1])
+    while not exit:
+        while not loggedIn:
+            print("Welcome! Please login to continue.")
+            id = getID()
+            pw = login(id, c, conn)
+
