@@ -1,3 +1,10 @@
+# I am too lazy to install sql on my desktop or use the lab machines, this creates a db
+import sqlite3
+
+conn = sqlite3.connect('testdata.db')
+c = conn.cursor()
+# PASTE SQL FILE BELOW:
+c.executescript("""
 -- CMPUT 291 - Fall 2022 (Davood Rafiei)
 
 drop table if exists perform;
@@ -70,3 +77,8 @@ create table perform (
   foreign key (aid) references artists,
   foreign key (sid) references songs
 );
+INSERT INTO users VALUES ('u1', 'Jonathan Fjeld', 'secretPassword');
+INSERT INTO users VALUES ('u2', 'Ying Wan', 'secretPassword2');
+INSERT INTO users VALUES ('u3', 'Crystal Zhang', 'secretPassword3');
+""")
+conn.commit()
