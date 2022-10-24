@@ -110,9 +110,14 @@ def userMenu(id, c, conn):
     # User commands will be implemented here
     # First, get the current highest sno from sessions (so we do not accidentally create a duplicate session)
     c.execute("SELECT MAX(sno) FROM sessions WHERE uid = ?;", (id,))
-    snoNext = c.fetchone()[0] + 1  # This will be the session number if a new session is started
+    try:
+        snoNext = c.fetchone()[0] + 1  # This will be the session number if a new session is started
+    except TypeError:
+        # a TypeError occurs when fetchone() returns (None,), which is not subscriptable
+        snoNext = 1  # The user has not had any sessions yet
+        
     print("Please select a command (enter a value between 1 and 6): ")
-    print("1. Start a session \n2.Search for songs and playlists \n3. Search for artists \n4. End the current session \n5. Log out \n6. Quit the program")
+    print("1. Start a session \n2. Search for songs and playlists \n3. Search for artists \n4. End the current session \n5. Log out \n6. Quit the program")
     command = int(input())
 
     if command == 1:
