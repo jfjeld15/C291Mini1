@@ -99,11 +99,65 @@ def login(id, pwd, c, conn):
             return "none", False
 
 
-def userMenu():
-    # User commands will be implemented here
-    return
+def startSession(c, conn, id, snoNext):
+    c.execute("INSERT INTO sessions VALUES (?, ?, DATE('now'), NULL);", (id, snoNext))
+    conn.commit()
+    snoNext += 1  # For creating the next session in the future
+    print("Session started.")
 
-def artistMenu():
+    
+def userMenu(id, c, conn):
+    # User commands will be implemented here
+    # First, get the current highest sno from sessions (so we do not accidentally create a duplicate session)
+    c.execute("SELECT MAX(sno) FROM sessions WHERE uid = ?;", (id,))
+    snoNext = c.fetchone()[0] + 1  # This will be the session number if a new session is started
+    print("Please select a command (enter a value between 1 and 6): ")
+    print("1. Start a session \n2.Search for songs and playlists \n3. Search for artists \n4. End the current session \n5. Log out \n6. Quit the program")
+    command = int(input())
+
+    if command == 1:
+        # The user wants to start a session with a unique sno (snoNext), starting at today's date and the end date is null
+        # a user should only have ONE session at a time! (This should be checked first) MAYBE I ASKED ON ECLASS SO IM WAITING ON A RESPONSE FOR THIS
+        c.execute("SELECT * FROM sessions WHERE uid = ? AND end IS NULL;", (id,))
+        if len(c.fetchall()) != 0:
+            # A session is already in progress!
+            print("ERROR: There is already a session in progress. Please end the current session before starting a new one.")
+        else:
+            startSession(c, conn, id, snoNext)
+        return False, True
+        
+    elif command == 2:
+        # The user wants to search for songs and playlists. After they have selected sonds, they may perform SONG ACTIONS as specified on the eClass spec
+        return False, True
+
+    elif command == 3:
+        # The user wants to search for artists.
+        return False, True
+
+    elif command == 4:
+        # The user wants to end the current session. A session can only be ended if there is currently a session in progress.
+        c.execute("SELECT * FROM sessions WHERE uid = ? AND end IS NULL;", (id,))
+        if len(c.fetchall()) != 0:
+            # A session is in progress, we can end it.
+            c.execute("UPDATE sessions SET end = DATE('now') WHERE end IS NULL;")
+            conn.commit()
+            print("Session ended.")
+        else:
+            print("ERROR: No session in progress. Please start a session before trying to end it.")
+        return False, True
+
+    elif command == 5:
+        # The user wants to log out, but not quit the program
+        print("Logout Successful")
+        return False, False
+    elif command == 6:
+        # The user wants to quit the program
+        return True, True
+    else:
+        print("Invalid option selected (enter a value between 1 and 6)")
+        return False, True
+
+def artistMenu(id, c, conn):
     # Artist commands will be implemented here
     return
 
@@ -120,9 +174,9 @@ if __name__ == "__main__":
             who, loggedIn = login(id, pwd, c, conn)
         # Go to one of two different menus based on who is logged in:
         if who == "user":
-            exit, loggedIn = userMenu()
+            exit, loggedIn = userMenu(id, c, conn)
         elif who == "artist":
-            exit, loggedIn = artistMenu()
+            exit, loggedIn = artistMenu(id, c, conn)
         else:
             print("How did you get here?")
             exit = True

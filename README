@@ -1,3 +1,15 @@
 yeah
 
-ASK PROF: I know passwords do not need to be encrypted for this project, but should they be hashed?
+NOTE:
+u3 is used for both user 'Crystal Zhang' and artist 'Imagine Dragons' lmao for testing purposes
+
+users (for testing)
+u1: Jonathan Fjeld, Password: secretPassword
+u2: Ying Wan, Password: secretPassword2
+u3: Crystal Zhang, Password: secretPassword3
+
+artists (for testing)
+a1: Lady Gaga, Password: pokerFACE1
+a2: OneRepublic, Password: star_counters
+u3: Imagine Dragons, Password: lmao
+a4: PSY, Password: oppaGangnamStyle
