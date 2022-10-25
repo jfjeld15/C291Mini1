@@ -6,11 +6,13 @@ Jonathan Fjeld, Ying Wan, Crystal Zhang
 
 import sqlite3
 import sys  # For taking command line argument
+import searchPlaySong
 from getpass import getpass  # For making the password non-visible at the time of typing
 
 
 def setup(dbName):
     # connects to an sql db, returns a cursor and conection variables
+    # conn = sqlite3.connect('./testdata.db')
     conn = sqlite3.connect(dbName)
     c = conn.cursor()
     return conn, c
@@ -133,6 +135,7 @@ def userMenu(id, c, conn):
         
     elif command == 2:
         # The user wants to search for songs and playlists. After they have selected sonds, they may perform SONG ACTIONS as specified on the eClass spec
+        searchPlaySong.search(conn,c)
         return False, True
 
     elif command == 3:
@@ -170,6 +173,7 @@ if __name__ == "__main__":
     exit = False
     loggedIn = False
     conn, c = setup(sys.argv[1])
+    # conn,c=setup('placeholder')
     while not exit:
         # Infinite loop until the user inputs "exit"
         while not loggedIn:
