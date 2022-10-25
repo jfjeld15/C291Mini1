@@ -42,7 +42,7 @@ def get_five(name_list,rows,query,cursor,connection):
     print(name_list)
     page=1
     end=print_five(rows,page)
-    ip="Y"
+    ip=""
     flag=True
     while flag==True:
         ip=input("P/N/number: ")
@@ -65,13 +65,27 @@ def get_five(name_list,rows,query,cursor,connection):
             ip=int(ip)
             if (rows[ip-1][4]=="playlist"):
                 query_final="SELECT ID,title,duration FROM (" + query + ") WHERE order_no=:ip"
-                
                 cursor.execute(query_final,{"ip":ip})
-                rows=cursor.fetchall()
-                print(rows)
+                selected_p=cursor.fetchall()
+                print(selected_p)
+            if (rows[ip-1][4]=="song"):
+                query_final="SELECT title,duration FROM (" + query + ") WHERE order_no=:ip"
+                cursor.execute(query_final,{"ip":ip})
+                selected_s=cursor.fetchall()
+                print(selected_s)
+                # provide options to listen, see more information, or add to a playlist
+                # more information=names of artists who performed it in + id, title, duration + names of playlists the song is in
+                # listening event is recorded within current session of the user or 
+                insert_song(connection,cursor,selected_s)
+                
 
 def print_five(rows,page):
     end=min(page+4,len(rows))
     for i in range(page-1,end):
         print(str(rows[i][0])+ ' | '+str(rows[i][1])+' | '+rows[i][2]+' | '+str(rows[i][3])+' | '+rows[i][4])
     return end
+
+def insert_song(connection,cursor,row_info):
+    # check if artists already has a song with the same title and duration 
+    #if not, song should be added with a unique id
+    return
