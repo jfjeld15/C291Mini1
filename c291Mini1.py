@@ -134,7 +134,7 @@ def userMenu(id, c, conn):
         return False, True
         
     elif command == 2:
-        # The user wants to search for songs and playlists. After they have selected sonds, they may perform SONG ACTIONS as specified on the eClass spec
+        # The user wants to search for songs and playlists. After they have selected songs, they may perform SONG ACTIONS as specified on the eClass spec
         searchPlaySong.search(conn,c)
         return False, True
 
@@ -158,9 +158,11 @@ def userMenu(id, c, conn):
         # The user wants to log out, but not quit the program
         print("Logout Successful")
         return False, False
+
     elif command == 6:
         # The user wants to quit the program
         return True, True
+        
     else:
         print("Invalid option selected (enter a value between 1 and 6)")
         return False, True
