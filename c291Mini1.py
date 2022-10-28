@@ -120,7 +120,11 @@ def userMenu(id, c, conn):
         
     print("Please select a command (enter a value between 1 and 6): ")
     print("1. Start a session \n2. Search for songs and playlists \n3. Search for artists \n4. End the current session \n5. Log out \n6. Quit the program")
-    command = int(input())
+    try:
+        command = int(input())
+    except ValueError:
+        # The user inputted a non-numeric value. Treat this as an incorrect option
+        command = 0
 
     if command == 1:
         # The user wants to start a session with a unique sno (snoNext), starting at today's date and the end date is null
