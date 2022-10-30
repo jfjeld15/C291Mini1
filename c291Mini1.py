@@ -102,48 +102,21 @@ def login(id, pwd, c, conn):
 
 
 def startSession(c, conn, id, snoNext):
-    c.execute("INSERT INTO sessions VALUES (?, ?, DATE('now'), NULL);", (id, snoNext))
-    conn.commit()
-    snoNext += 1  # For creating the next session in the future
-    print("Session started.")
+    # Create a session with a unique session number for the current logged in user id.
+    # a user should only have ONE session at a time! (This should be checked first)
+    c.execute("SELECT * FROM sessions WHERE uid = ? AND end IS NULL;", (id,))
+    if len(c.fetchall()) != 0:
+        # A session is already in progress!
+        print("ERROR: There is already a session in progress. Please end the current session before starting a new one.")
+    else:
+        c.execute("INSERT INTO sessions VALUES (?, ?, DATE('now'), NULL);", (id, snoNext))
+        conn.commit()
+        snoNext += 1  # For creating the next session in the future
+        print("Session started.")
+    return snoNext
 
-    
-def userMenu(id, c, conn):
-    # User commands will be implemented here
-    # First, get the current highest sno from sessions (so we do not accidentally create a duplicate session)
-    c.execute("SELECT MAX(sno) FROM sessions WHERE uid = ?;", (id,))
-    try:
-        snoNext = c.fetchone()[0] + 1  # This will be the session number if a new session is started
-    except TypeError:
-        # a TypeError occurs when fetchone() returns (None,), which is not subscriptable
-        snoNext = 1  # The user has not had any sessions yet
-        
-    print("Please select a command (enter a value between 1 and 6): ")
-    print("1. Start a session \n2. Search for songs and playlists \n3. Search for artists \n4. End the current session \n5. Log out \n6. Quit the program")
-    command = int(input())
-
-    if command == 1:
-        # The user wants to start a session with a unique sno (snoNext), starting at today's date and the end date is null
-        # a user should only have ONE session at a time! (This should be checked first) MAYBE I ASKED ON ECLASS SO IM WAITING ON A RESPONSE FOR THIS
-        c.execute("SELECT * FROM sessions WHERE uid = ? AND end IS NULL;", (id,))
-        if len(c.fetchall()) != 0:
-            # A session is already in progress!
-            print("ERROR: There is already a session in progress. Please end the current session before starting a new one.")
-        else:
-            startSession(c, conn, id, snoNext)
-        return False, True
-        
-    elif command == 2:
-        # The user wants to search for songs and playlists. After they have selected sonds, they may perform SONG ACTIONS as specified on the eClass spec
-        searchPlaySong.search(conn,c)
-        return False, True
-
-    elif command == 3:
-        # The user wants to search for artists.
-        return False, True
-
-    elif command == 4:
-        # The user wants to end the current session. A session can only be ended if there is currently a session in progress.
+def endSession(c, conn, id):
+    # The user wants to end the current session. A session can only be ended if there is currently a session in progress.
         c.execute("SELECT * FROM sessions WHERE uid = ? AND end IS NULL;", (id,))
         if len(c.fetchall()) != 0:
             # A session is in progress, we can end it.
@@ -152,22 +125,88 @@ def userMenu(id, c, conn):
             print("Session ended.")
         else:
             print("ERROR: No session in progress. Please start a session before trying to end it.")
+
+    
+def userMenu(id, c, conn):
+    # User commands will be implemented here
+    # First, get the current highest sno from sessions (so we do not accidentally create a duplicate session)
+    c.execute("SELECT MAX(sno) FROM sessions WHERE uid = ?;", (id,))
+    try:
+        snoNext = c.fetchone()[0] + 1  # This will be the session number if a new session is started (Will always be unique)
+    except TypeError:
+        # a TypeError occurs when fetchone() returns (None,), which is not subscriptable
+        snoNext = 1  # The user has not had any sessions yet
+        
+    print("Please select a command (enter a value between 1 and 6): ")
+    print("1. Start a session \n2. Search for songs and playlists \n3. Search for artists \n4. End the current session \n5. Log out \n6. Quit the program")
+    try:
+        command = int(input())
+    except ValueError:
+        # The user inputted a non-numeric value. Treat this as an incorrect option
+        command = 0
+
+    if command == 1:
+        # The user wants to start a session with a unique sno (snoNext), starting at today's date and the end date is null
+        snoNext = startSession(c, conn, id, snoNext)
+        return False, True
+        
+    elif command == 2:
+        # The user wants to search for songs and playlists. After they have selected songs, they may perform SONG ACTIONS as specified on the eClass spec
+        searchPlaySong.search(conn,c)
+        return False, True
+
+    elif command == 3:
+        # The user wants to search for artists.
+        # TODO INSERT ARTIST SEARCH IMPLEMENTATION HERE*************************************************************************
+        return False, True
+
+    elif command == 4:
+        # The user wants to end the current session.
+        endSession(c, conn, id)
         return False, True
 
     elif command == 5:
         # The user wants to log out, but not quit the program
         print("Logout Successful")
         return False, False
+
     elif command == 6:
         # The user wants to quit the program
         return True, True
+        
     else:
         print("Invalid option selected (enter a value between 1 and 6)")
         return False, True
 
 def artistMenu(id, c, conn):
-    # Artist commands will be implemented here
-    return
+    # Artist commands will be implemented here.
+    print("Please select a command (enter a value between 1 and 4): ")
+    print("1. Add a song \n2. Find top fans and playlists \n3. Log out \n4. Quit the program")
+    try:
+        command = int(input())
+    except ValueError:
+        # The artist inputted a non-numeric value. Treat this as an incorrect option
+        command = 0
+    
+    if command == 1:
+        # The artist wants to add a song.
+        # TODO INSERT ADD SONG IMPLEMENTATION HERE ***************************************************************************************
+        return False, True
+        
+    elif command == 2:
+        # The artist wants to find their top fans and playlists
+        # TODO INSERT FIND TOP FANS/PLAYLISTS HERE ******************************************************************************************
+        return False, True
+    
+    elif command == 3:
+        # The artist wants to log out, but not quit the program
+        print("Logout Successful")
+        return False, False
+
+    elif command == 4:
+        # The artist wants to quit the program
+        return True, True
+
 
 if __name__ == "__main__":
     exit = False
@@ -178,6 +217,7 @@ if __name__ == "__main__":
         # Infinite loop until the user inputs "exit"
         while not loggedIn:
             print("Welcome! Please login to continue.")
+            print("NEW USERS: Enter an unused ID and password to register.")
             id = getID()
             pwd = getpass("Enter password:")  # Non-visible password at the time of typing
             who, loggedIn = login(id, pwd, c, conn)
@@ -189,4 +229,5 @@ if __name__ == "__main__":
         else:
             print("How did you get here?")
             exit = True
+    print("Goodbye!")
 
