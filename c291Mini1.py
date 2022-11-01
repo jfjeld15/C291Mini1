@@ -44,7 +44,7 @@ def login(id, pwd, c, conn):
     isUser = False
     isArtist = False
      # This format escapes special characters (prevents SQL injection):
-    c.execute("SELECT * FROM users WHERE lower(uid) = ?;", (id,)) 
+    c.execute("SELECT * FROM users WHERE lower(uid) = ?;", (id,))
     if len(c.fetchall()) != 0:
         isUser = True
     c.execute("SELECT * FROM artists WHERE lower(aid) = ?;", (id,))
