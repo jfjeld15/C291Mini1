@@ -192,7 +192,7 @@ def artistMenu(id, c, conn):
     
     if command == 1:
         # The artist wants to add a song.
-        artistActions.addSong(c, id, conn)
+        artistActions.addSong(c, id)
         return False, True
         
     elif command == 2:

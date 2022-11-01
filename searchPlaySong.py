@@ -1,3 +1,5 @@
+from numpy import true_divide
+
 def search(connection,cursor,id):
     keyword_list=input("Enter keyword: ").split(';')
     keywords=sorted(set(keyword_list))
@@ -45,15 +47,16 @@ def get_five(name_list,rows,query,cursor,connection,id):
     ip=""
     page_flag=True # for page flipping
     while page_flag==True:
-        ip=input("P/N/number: ")
-        if ip=="N":
+        ip=input("Type (P) for Previous Page, (N) for Next Page, the order number of the song/playlist you wish to select: ")
+        ip=ip.lower()
+        if ip=="n":
             if (end==len(rows)):
                 print("this is the last page")
                 pass
             else:
                 page+=5
                 end=print_five(rows,page)
-        elif ip=="P":
+        elif ip=="p":
             if (page==1):
                 print("this is the first page")
                 pass
@@ -62,6 +65,8 @@ def get_five(name_list,rows,query,cursor,connection,id):
                 end=print_five(rows,page)
         elif ip.isdigit() and int(ip)>len(rows) or int(ip)<=0:
             print("those were none of the options")
+        elif ip=="exit":
+            return
         else:
             order=int(ip)
             page_flag=False
@@ -79,16 +84,18 @@ def get_five(name_list,rows,query,cursor,connection,id):
                 song_id=s[0][0]
                 
                 while option_bool==True:
-                    song_action=input("Would you like to (1) Listen, (2) See more Information, or (3) add it to a playlist? ")
+                    song_action=input("Would you like to (1) Listen, (2) See more Information, (3) add it to a playlist or (4) Exit? ")
                     if song_action=='1':
                         listen_song(song_id,cursor,connection,id)
-                        option_bool==False
+                        option_bool=False
                     elif song_action=='2':
                         song_info(order,query,cursor,connection,song_id)
-                        option_bool==False
+                        option_bool=False
                     elif song_action=='3':
                         addPlaylist(song_id,cursor,connection,id)
-                        option_bool==False
+                        option_bool=False
+                    elif song_action=='4':
+                        return
                     else:
                         print("Those were none of the options")
             
@@ -180,6 +187,7 @@ def song_info(order,query,cursor,connection,song_id):
     
 
 def addPlaylist(song_id,cursor,connection,uid):
+    
     playlistName=input("Enter playlist name: ")
     # Check if playlist exists
     cursor.execute("SELECT * FROM playlists WHERE title =? AND uid=?",(playlistName,uid))
@@ -204,7 +212,10 @@ def addPlaylist(song_id,cursor,connection,uid):
 
     insertpl='''
         INSERT INTO plinclude VALUES (?, ?, ?)'''
-    cursor.execute(insertpl,(pid,song_id,s_order,))
+    try:
+        cursor.execute(insertpl,(pid,song_id,s_order,))
+    except:
+        print("Song is already in playlist")
     connection.commit()
        
     
