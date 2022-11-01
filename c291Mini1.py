@@ -7,6 +7,8 @@ Jonathan Fjeld, Ying Wan, Crystal Zhang
 import sqlite3
 import sys  # For taking command line argument
 import searchPlaySong
+import searchArtist
+import artistActions
 from getpass import getpass  # For making the password non-visible at the time of typing
 
 
@@ -157,7 +159,7 @@ def userMenu(id, c, conn):
 
     elif command == 3:
         # The user wants to search for artists.
-        # TODO INSERT ARTIST SEARCH IMPLEMENTATION HERE*************************************************************************
+        searchArtist.search(conn, c, id)
         return False, True
 
     elif command == 4:
@@ -190,12 +192,12 @@ def artistMenu(id, c, conn):
     
     if command == 1:
         # The artist wants to add a song.
-        # TODO INSERT ADD SONG IMPLEMENTATION HERE ***************************************************************************************
+        artistActions.addSong(c, id)
         return False, True
         
     elif command == 2:
         # The artist wants to find their top fans and playlists
-        # TODO INSERT FIND TOP FANS/PLAYLISTS HERE ******************************************************************************************
+        artistActions.findTop(c, id)
         return False, True
     
     elif command == 3:
