@@ -1,10 +1,10 @@
 def addSong(cursor, aid, conn):
-    title = input("Input song title: ").lower()
+    title = input("Input song title: ")
     dur = input("Input song duration: ")
 
     query = f'''SELECT COUNT(*) 
             FROM songs s, perform p, artists a
-            WHERE LOWER(title) = '{title}'
+            WHERE LOWER(title) = '{title.lower()}'
                 AND duration = '{dur}'
                 AND s.sid = p.sid
                 AND p.aid = a.aid
@@ -32,12 +32,10 @@ def addSong(cursor, aid, conn):
     return
 
 def findTop(cursor, aid):
-    user_query = f'''SELECT DISTINCT l.uid, SUM(l.cnt*s.duration) AS total_duration
-                FROM songs s, listen l, perform p, artists a
-                WHERE l.sid == s.sid
-                    AND s.sid = p.sid
-                    AND p.aid = '{aid}'
-                GROUP BY l.uid
+    user_query = f'''select l.uid, sum(l.cnt*s.duration)
+                from listen l, songs s, perform p, artists a
+                where l.sid=s.sid and s.sid=p.sid and p.aid = a.aid and a.aid = '{aid}'
+                group by l.uid, p.aid, s.sid
                 ORDER BY SUM(l.cnt*s.duration) DESC'''
     cursor.execute(user_query)
     rows = cursor.fetchall()
@@ -49,14 +47,14 @@ def findTop(cursor, aid):
         except:
             break
 
-    play_query = f'''SELECT DISTINCT pl.pid, playlists.title, SUM(pl.sid) AS num_songs_by_artist
+    play_query = f'''SELECT DISTINCT pl.pid, playlists.title, COUNT(*) AS num_songs_by_artist
                 FROM songs s, perform p, plinclude pl, playlists
                 WHERE playlists.pid = pl.pid
                     AND pl.sid = s.sid
                     AND s.sid = p.sid
                     AND p.aid = '{aid}'
                 GROUP BY pl.pid
-                ORDER BY SUM(pl.sid) DESC'''
+                ORDER BY COUNT(*) DESC'''
     cursor.execute(play_query)
     rows = cursor.fetchall()
 
