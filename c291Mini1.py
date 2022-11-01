@@ -154,7 +154,7 @@ def userMenu(id, c, conn):
         
     elif command == 2:
         # The user wants to search for songs and playlists. After they have selected songs, they may perform SONG ACTIONS as specified on the eClass spec
-        searchPlaySong.search(conn,c)
+        searchPlaySong.search(conn, c, id)
         return False, True
 
     elif command == 3:
