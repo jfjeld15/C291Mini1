@@ -1,4 +1,4 @@
-def addSong(cursor, aid):
+def addSong(cursor, aid, conn):
     title = input("Input song title: ").lower()
     dur = input("Input song duration: ")
 
@@ -8,21 +8,28 @@ def addSong(cursor, aid):
                 AND duration = '{dur}'
                 AND s.sid = p.sid
                 AND p.aid = a.aid
-                AND a.aid = '{aid}'
+                AND a.aid = '{aid}';
             '''
     cursor.execute(query)
     exists = cursor.fetchall()[0][0]
+
+    cursor.execute('SELECT MAX(s.sid) FROM songs s;')
+    sid = cursor.fetchall()[0][0] + 1
 
     if exists >= 1:
         ip = int(input('Song already exists! Enter (1) to cancel or (2) to add it as a new song: '))
         if ip == 1:
             print("cancelled")
+            return
         elif ip == 2:
-            cursor.execute('INSERT INTO songs VALUES(?, ?, ?)', (aid, title, dur))
+            pass
         else:
             print("Those were none of the options")
-    else:
-        cursor.execute('INSERT INTO songs VALUES(?, ?, ?)', (aid, title, dur))
+            return
+    cursor.execute('INSERT INTO songs VALUES(?, ?, ?)', (sid, title, dur))
+    cursor.execute('INSERT INTO perform VALUES(?, ?)', (aid, sid))
+    conn.commit()
+    return
 
 def findTop(cursor, aid):
     user_query = f'''SELECT DISTINCT l.uid, SUM(l.cnt*s.duration) AS total_duration
@@ -43,9 +50,9 @@ def findTop(cursor, aid):
             break
 
     play_query = f'''SELECT DISTINCT pl.pid, playlists.title, SUM(pl.sid) AS num_songs_by_artist
-                FROM songs s, perform p, artists a, plinclude pl, playlists
+                FROM songs s, perform p, plinclude pl, playlists
                 WHERE playlists.pid = pl.pid
-                    AND pl.sid == s.sid
+                    AND pl.sid = s.sid
                     AND s.sid = p.sid
                     AND p.aid = '{aid}'
                 GROUP BY pl.pid
