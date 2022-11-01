@@ -1,5 +1,3 @@
-from numpy import true_divide
-
 def search(connection,cursor,id):
     keyword_list=input("Enter keyword: ").split(';')
     keywords=sorted(set(keyword_list))
