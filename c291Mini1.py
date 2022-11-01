@@ -209,6 +209,10 @@ def artistMenu(id, c, conn):
         # The artist wants to quit the program
         return True, True
 
+    else:
+        print("Invalid option selected (enter a value between 1 and 4)")
+        return False, True
+
 
 if __name__ == "__main__":
     exit = False
