@@ -69,7 +69,7 @@ def addSong(cursor, aid, conn):
             cursor.execute('INSERT INTO perform VALUES(?, ?)', (artist, sid))
             conn.commit()
         else:
-            print(aid + ' is not an artist, did not add to performers')
+            print(artist + ' is not an artist, did not add to performers')
     return
 
 
@@ -117,6 +117,7 @@ def findTop(cursor, aid):
     cursor.execute(play_query)
     rows = cursor.fetchall()
 
+    print("\ntop playlists:")
     print('pid | title | number of songs included by artist')
     for i in range(3):
         try:
