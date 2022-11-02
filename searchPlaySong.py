@@ -1,50 +1,67 @@
 def search(connection,cursor,id):
     #get input
     keyword_list=input("Enter keyword(s): ").split(';')
+   
 
     #make sure there aren't any duplicates
+    keyword_sorted=sorted(set(keyword_list))
+
+    #Create a copy 
     keywords=sorted(set(keyword_list))
+
+    #Delete blank entries
+    for w in range(len(keyword_sorted)):
+        test_word=keyword_sorted[w]
+        if len(test_word.strip())==0:
+            keywords.remove(keyword_sorted[w])
+
     query=""
 
-    #For every word in the list, count the number of occurences in the song and playlist titles
-    for i in range(len(keywords)):
-        #For key insensitivity
-        keyword=keywords[i].lower()
-        query+=f'''
-            SELECT ID,title, duration, (LENGTH(title)-LENGTH(REPLACE(LOWER(title), '{keyword}', '')))/LENGTH('{keyword}') AS counter,type
-        FROM (
-            SELECT pl.pid AS 'ID',p.title,SUM(s.duration) AS 'duration','playlist' AS 'type'
-            FROM plinclude pl
-            INNER JOIN songs s 
-            ON s.sid=pl.sid
-            INNER JOIN playlists p 
-            ON pl.pid=p.pid
-            WHERE LOWER(p.title) LIKE '%{keyword}%'
-            GROUP BY pl.pid
+    if keywords:
+        #For every word in the list, count the number of occurences in the song and playlist titles
+        for i in range(len(keywords)):
+            #For key insensitivity
+            keyword=keywords[i].lower()
+            query+=f'''
+                SELECT ID,title, duration, (LENGTH(title)-LENGTH(REPLACE(LOWER(title), '{keyword}', '')))/LENGTH('{keyword}') AS counter,type
+            FROM (
+                SELECT pl.pid AS 'ID',p.title,SUM(s.duration) AS 'duration','playlist' AS 'type'
+                FROM plinclude pl
+                INNER JOIN songs s 
+                ON s.sid=pl.sid
+                INNER JOIN playlists p 
+                ON pl.pid=p.pid
+                WHERE LOWER(p.title) LIKE '%{keyword}%'
+                GROUP BY pl.pid
 
-            UNION 
+                UNION 
 
-            SELECT s.sid AS 'ID' ,s.title,s.duration,'song' AS 'type' 
-            FROM songs s 
-            WHERE LOWER(s.title) LIKE '%{keyword}%'
-        )
-        '''
-        if (i!=len(keywords)-1):
-            query+="UNION"
+                SELECT s.sid AS 'ID' ,s.title,s.duration,'song' AS 'type' 
+                FROM songs s 
+                WHERE LOWER(s.title) LIKE '%{keyword}%'
+            )
+            '''
+            if (i!=len(keywords)-1):
+                query+="UNION"
     
-    # Sum the occurrences together and return an ordered list of songs and playlists 
-    query_final="SELECT ROW_NUMBER() OVER(ORDER BY SUM(counter) DESC) AS order_no,ID,title,duration,type FROM("+query+") GROUP BY title"
-    cursor.execute(query_final)
+            # Sum the occurrences together and return an ordered list of songs and playlists 
+            query_final="SELECT ROW_NUMBER() OVER(ORDER BY SUM(counter) DESC) AS order_no,ID,title,duration,type FROM("+query+") GROUP BY title"
+            cursor.execute(query_final)
 
-    #Get the column names
-    name_list=[]
-    for i in range(len(cursor.description)):
-        desc = cursor.description[i]
-        name_list.append(desc[0])
-    rows=cursor.fetchall()
-    
-    #Proceed to print the query to terminal
-    get_five(name_list,rows,query_final,cursor,connection,id)
+            if len(cursor.fetchall()) == 0:
+                print("No matching titles with those keywords")
+            else:
+                #Get the column names
+                name_list=[]
+                for i in range(len(cursor.description)):
+                    desc = cursor.description[i]
+                    name_list.append(desc[0])
+                rows=cursor.fetchall()
+                
+                #Proceed to print the query to terminal
+                get_five(name_list,rows,query_final,cursor,connection,id)
+    else:
+        print("No keywords were given")
 
 
 def get_five(name_list,rows,query,cursor,connection,id):
