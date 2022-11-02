@@ -44,22 +44,23 @@ def search(connection,cursor,id):
             if (i!=len(keywords)-1):
                 query+="UNION"
     
-            # Sum the occurrences together and return an ordered list of songs and playlists 
-            query_final="SELECT ROW_NUMBER() OVER(ORDER BY SUM(counter) DESC) AS order_no,ID,title,duration,type FROM("+query+") GROUP BY title"
-            cursor.execute(query_final)
+        # Sum the occurrences together and return an ordered list of songs and playlists 
+        query_final="SELECT ROW_NUMBER() OVER(ORDER BY SUM(counter) DESC) AS order_no,ID,title,duration,type FROM("+query+") GROUP BY title"
+        cursor.execute(query_final)
+        rows=cursor.fetchall()
 
-            if len(cursor.fetchall()) == 0:
-                print("No matching titles with those keywords")
-            else:
-                #Get the column names
-                name_list=[]
-                for i in range(len(cursor.description)):
-                    desc = cursor.description[i]
-                    name_list.append(desc[0])
-                rows=cursor.fetchall()
-                
-                #Proceed to print the query to terminal
-                get_five(name_list,rows,query_final,cursor,connection,id)
+        if len(rows) == 0:
+            print("No matching titles with those keywords")
+        else:
+            #Get the column names
+            name_list=[]
+            for i in range(len(cursor.description)):
+                desc = cursor.description[i]
+                name_list.append(desc[0])
+            
+            
+            #Proceed to print the query to terminal
+            get_five(name_list,rows,query_final,cursor,connection,id)
     else:
         print("No keywords were given")
 
