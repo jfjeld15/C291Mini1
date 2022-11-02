@@ -10,7 +10,11 @@ def search(connection, cursor, uid):
     cursor: connection beftween database and queries
     uid: id of user logged in
     '''
-    keywords = input('Please input keywords to search by: ').split(';')
+    keywords = input('Please input keywords to search by: ')
+    if keywords.strip() == "":
+        return
+    else:
+        keywords = keywords.split(";")
 
     # return name, nationality, and number of songs of artist
     query = '''SELECT DISTINCT out.name, out.nation, out.cnt_song AS 'number of songs'
@@ -75,7 +79,7 @@ def get_five(name_list, rows, cursor, connection, uid):
             else:
                 page = max(1, page-5)
                 end = print_five(rows,page)
-        elif ip.isdigit() and int(ip) > len(rows) or int(ip) <= 0:  # error
+        elif not ip.isdigit() and int(ip) > len(rows) or int(ip) <= 0:  # error
             print("those were none of the options")
         else:
             printSongInfo(cursor, connection, uid, ip, rows)  # see artist info
