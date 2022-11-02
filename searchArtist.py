@@ -39,7 +39,7 @@ def get_five(name_list, rows, cursor, connection, uid):
     end = print_five(rows, page)
     flag = True
     while flag == True:
-        ip = input("P/N/number: ").lower()
+        ip = input("Type (P) for Previous Page, (N) for Next Page, (E) to exit, or the order number of the song/playlist you wish to select: ").lower()
         if ip == "n":
             if (end == len(rows)):
                 print("this is the last page")
@@ -54,8 +54,11 @@ def get_five(name_list, rows, cursor, connection, uid):
             else:
                 page = max(1, page-5)
                 end = print_five(rows,page)
-        elif ip.isdigit() and int(ip)>len(rows) or int(ip)<=0:
-            print("those were none of the options")
+        elif ip=="e": #Exit
+            return
+        elif (ip.isdigit() and (int(ip)>len(rows) or int(ip)<=0)) or (not ip.isdigit() and ip != "e"):
+            #Error checking user input
+            print("Those were none of the options")
         else:
             flag = False
             printArtistInfo(cursor, connection, uid, ip, rows)
