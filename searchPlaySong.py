@@ -39,7 +39,10 @@ def search(connection,cursor,id):
 
 
 def get_five(name_list,rows,query,cursor,connection,id):
-    print(name_list)
+    for col in range(len(name_list)):
+        print(str(col) + ' | ')
+        
+    # print(name_list)
     page=1
     end=print_five(rows,page)
     ip=""
