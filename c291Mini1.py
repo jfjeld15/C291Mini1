@@ -79,7 +79,7 @@ def login(id, pwd, c, conn):
     
     if isUser == True and isArtist == True:
         # The id exists in both users AND artists
-        result = input("ID found for both users and artists, login as user or artist (type 'user' or 'artist')? ").lower()
+        result = input("ID found for both users and artists, login as user or artist? (type 'user' or 'artist'): ").lower()
         if result == "user":
             c.execute("SELECT * FROM users WHERE lower(uid) = ? AND pwd = ?;", (id, pwd,))
             if len(c.fetchall()) != 0:
@@ -192,7 +192,7 @@ def artistMenu(id, c, conn):
     
     if command == 1:
         # The artist wants to add a song.
-        artistActions.addSong(c, id)
+        artistActions.addSong(c, id, conn)
         return False, True
         
     elif command == 2:

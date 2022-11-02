@@ -1,6 +1,15 @@
 def addSong(cursor, aid, conn):
     title = input("Input song title: ")
-    dur = input("Input song duration: ")
+    while True:
+        # Loops until the user inputs a positive integer duration
+        try:
+            dur = int(input("Input song duration: "))
+        except ValueError:
+            print("Please input a positive integer.")
+            continue
+        if dur <= 0:
+            print("Please input a positive integer.")
+        break
 
     query = f'''SELECT COUNT(*) 
             FROM songs s, perform p, artists a
