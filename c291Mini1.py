@@ -14,8 +14,7 @@ from getpass import getpass  # For making the password non-visible at the time o
 
 def setup(dbName):
     # connects to an sql db, returns a cursor and conection variables
-    conn = sqlite3.connect('./testdata.db')
-    #conn = sqlite3.connect(dbName)
+    conn = sqlite3.connect(dbName)
     c = conn.cursor()
     return conn, c
 
@@ -217,8 +216,7 @@ def artistMenu(id, c, conn):
 if __name__ == "__main__":
     exit = False
     loggedIn = False
-   # conn, c = setup(sys.argv[1])
-    conn,c=setup('placeholder')
+    conn, c = setup(sys.argv[1])
     while not exit:
         # Infinite loop until the user inputs "exit"
         while not loggedIn:
