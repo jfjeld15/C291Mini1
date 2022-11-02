@@ -23,6 +23,8 @@ def addSong(cursor, aid, conn):
         break
     artists = input("Input id of additional artists (leave blank if none): ").split(";")
     # adds logged in artist if not already in list
+    for i in range(len(artists)):
+        artists[i] = artists[i].strip()  # Strips whitespace
     if aid not in artists:
         artists.append(aid)
 

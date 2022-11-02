@@ -66,7 +66,7 @@ def get_five(name_list, rows, cursor, connection, uid):
     end = print_five(rows, page)
 
     while True:
-        ip = input("Type (P) for Previous Page, (N) for Next Page, the order no of the artist you wish to select: ").lower()
+        ip = input("Type (P) for Previous Page, (N) for Next Page, (E) to exit, or the order no of the artist you wish to select: ").lower()
         if ip == "n":  # print next page by printing rows (page+5) to (page+10)
             if (end == len(rows)):
                 print("this is the last page")
@@ -79,7 +79,9 @@ def get_five(name_list, rows, cursor, connection, uid):
             else:
                 page = max(1, page-5)
                 end = print_five(rows,page)
-        elif not ip.isdigit() and int(ip) > len(rows) or int(ip) <= 0:  # error
+        elif ip=="e": #Exit
+            return
+        elif (ip.isdigit() and (int(ip)>len(rows) or int(ip)<=0)) or (not ip.isdigit() and ip != "e"):
             print("those were none of the options")
         else:
             printSongInfo(cursor, connection, uid, ip, rows)  # see artist info
@@ -139,7 +141,11 @@ def printSongInfo(cursor, connection, uid, ip, rows):
         print(str(i+1) + ' | ' + str(rows[i][0]) + ' | ' + str(rows[i][1]) + ' | ' + str(rows[i][2]))
     
     ip = input("Type (E) to exit or order no of the song you wish to select: ").lower()
-    if ip != 'e':
+    if (ip.isdigit() and (int(ip)>len(rows) or int(ip)<=0)) or (not ip.isdigit() and ip != "e"):
+        #Error checking user input
+        print("Those were none of the options, returning to user menu")
+        return
+    elif ip.isnumeric():
         ip = int(ip)
         # get the song id of the user selected song from the row/order number
         get_sid = f"SELECT sid FROM songs WHERE title = '{rows[ip-1][1]}'"
