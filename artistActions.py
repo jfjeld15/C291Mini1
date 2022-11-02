@@ -9,8 +9,9 @@ def addSong(cursor, aid, conn):
             continue
         if dur <= 0:
             print("Please input a positive integer.")
+            continue
         break
-    artists = input("Input additional artists (leave blank if none): ").split(";")
+    artists = input("Input id of additional artists (leave blank if none): ").split(";")
     artists.append(aid)
 
     query = f'''SELECT COUNT(*) 
@@ -47,7 +48,6 @@ def addSong(cursor, aid, conn):
     for artist in artists:
         if artist in all_aid:
             cursor.execute('INSERT INTO perform VALUES(?, ?)', (artist, sid))
-            print('yes')
             conn.commit()
     return
 
