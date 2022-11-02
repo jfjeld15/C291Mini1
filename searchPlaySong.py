@@ -49,6 +49,7 @@ def search(connection,cursor,id):
 
 def get_five(name_list,rows,query,cursor,connection,id):
     #Print column names
+    col_str=""
     for col in range(len(name_list)):
         col_str+=str(name_list[col]) + ' | '
     print(col_str)
@@ -112,7 +113,6 @@ def get_five(name_list,rows,query,cursor,connection,id):
                 #Proceed to different songOptions
                 songOptions(song_id,cursor,connection,id,order,query)
 
-               
             
 def songOptions(song_id,cursor,connection,uid,order,query):
     #Set flag so that songOptions would stop looping after user chooses an action
