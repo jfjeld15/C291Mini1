@@ -69,20 +69,20 @@ def get_five(name_list, rows, cursor, connection, uid):
         ip = input("Type (P) for Previous Page, (N) for Next Page, (E) to exit, or the order no of the artist you wish to select: ").lower()
         if ip == "n":  # print next page by printing rows (page+5) to (page+10)
             if (end == len(rows)):
-                print("this is the last page")
+                print("This is the last page")
             else:
                 page += 5
                 end = print_five(rows, page)
         elif ip == "p":  # print previous page by printing rows (page-5) to page
             if (page == 1):
-                print("this is the first page")
+                print("This is the first page")
             else:
                 page = max(1, page-5)
                 end = print_five(rows,page)
         elif ip=="e": #Exit
             return
         elif (ip.isdigit() and (int(ip)>len(rows) or int(ip)<=0)) or (not ip.isdigit() and ip != "e"):
-            print("those were none of the options")
+            print("Those were none of the options")
         else:
             printSongInfo(cursor, connection, uid, ip, rows)  # see artist info
             break
