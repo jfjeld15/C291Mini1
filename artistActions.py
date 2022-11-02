@@ -10,6 +10,8 @@ def addSong(cursor, aid, conn):
         if dur <= 0:
             print("Please input a positive integer.")
         break
+    artists = input("Input additional artists (leave blank if none): ").split(";")
+    artists.append(aid)
 
     query = f'''SELECT COUNT(*) 
             FROM songs s, perform p, artists a
@@ -21,23 +23,32 @@ def addSong(cursor, aid, conn):
             '''
     cursor.execute(query)
     exists = cursor.fetchall()[0][0]
-
-    cursor.execute('SELECT MAX(s.sid) FROM songs s;')
-    sid = cursor.fetchall()[0][0] + 1
-
     if exists >= 1:
         ip = int(input('Song already exists! Enter (1) to cancel or (2) to add it as a new song: '))
         if ip == 1:
             print("cancelled")
             return
-        elif ip == 2:
-            pass
-        else:
+        elif ip != 2:
             print("Those were none of the options")
             return
+
+    cursor.execute('SELECT MAX(s.sid) FROM songs s;')
+    sid = cursor.fetchall()[0][0] + 1
+
     cursor.execute('INSERT INTO songs VALUES(?, ?, ?)', (sid, title, dur))
-    cursor.execute('INSERT INTO perform VALUES(?, ?)', (aid, sid))
     conn.commit()
+
+    all_aid = []
+    cursor.execute('SELECT aid FROM artists')
+    all_artists = cursor.fetchall()
+    for i in range(len(all_artists)):
+        all_aid.append(all_artists[i][0])
+
+    for artist in artists:
+        if artist in all_aid:
+            cursor.execute('INSERT INTO perform VALUES(?, ?)', (artist, sid))
+            print('yes')
+            conn.commit()
     return
 
 def findTop(cursor, aid):
