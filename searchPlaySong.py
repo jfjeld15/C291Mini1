@@ -90,7 +90,7 @@ def get_five(name_list,rows,query,cursor,connection,id):
 
             #Make sure that indices don't go out of bounds
             if (end==len(rows)):
-                print("this is the last page")
+                print("This is the last page")
                 pass
             else:
                 #Get the next five songs/playlists
@@ -99,7 +99,7 @@ def get_five(name_list,rows,query,cursor,connection,id):
         elif ip=="p": #Previous page
             #Make sure that indices don't go out of bounds
             if (page==1):
-                print("this is the first page")
+                print("This is the first page")
                 pass
             else:
                 #Define 1 as the minimum page number user can access
