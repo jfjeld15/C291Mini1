@@ -45,7 +45,7 @@ def get_five(name_list,rows,query,cursor,connection,id):
     ip=""
     page_flag=True # for page flipping
     while page_flag==True:
-        ip=input("Type (P) for Previous Page, (N) for Next Page, the order number of the song/playlist you wish to select: ")
+        ip=input("Type (P) for Previous Page, (N) for Next Page, (E) to exit, or the order number of the song/playlist you wish to select: ")
         ip=ip.lower()
         if ip=="n":
             if (end==len(rows)):
@@ -61,10 +61,10 @@ def get_five(name_list,rows,query,cursor,connection,id):
             else:
                 page=max(1,page-5)
                 end=print_five(rows,page)
-        elif ip.isdigit() and int(ip)>len(rows) or int(ip)<=0:
-            print("those were none of the options")
-        elif ip=="exit":
+        elif ip=="e":
             return
+        elif (ip.isdigit() and (int(ip)>len(rows) or int(ip)<=0)) or (not ip.isdigit() and ip != "e"):
+            print("those were none of the options")
         else:
             order=int(ip)
             page_flag=False
@@ -109,41 +109,42 @@ def listen_song(song_id,cursor,connection,uid):
     #Check if a session is started
     cursor.execute("SELECT * FROM sessions WHERE uid = ? AND `end` IS NULL;", (uid,))
 
-    if len(cursor.fetchall()) != 0:  # A session is in progress
-       
-        # Check if user is already listening to the song
-        cursor.execute("SELECT * FROM listen WHERE uid = ? AND sid=?;", (uid,song_id))
-       
-        if len(cursor.fetchall())!=0: #user listened to the song before
-            #update count
-            update_query='''UPDATE listen 
-                            SET cnt=cnt+1 
-                            WHERE uid=? AND sid=?'''
-            cursor.execute(update_query,(uid,song_id))
-            connection.commit()
-        else: #first time listening to the song
-
-            #get session number
-            cursor.execute("SELECT sno FROM sessions WHERE uid=? AND `end` IS NULL", (uid,))
-            sno_row=cursor.fetchall()
-            sno=sno_row[0][0]
-
-            #insert into listen
-            cursor.execute("INSERT INTO listen VALUES(?,?,?,?)",(uid,sno,song_id,1.0))
-            connection.commit()
-
-    else: #A session is not in progress
+    if len(cursor.fetchall()) == 0:  # A session is not in progress, start one
         # Get new sno
-        cursor.execute("SELECT MAX(sno) FROM sessions WHERE uid= ?",(uid,))
-        sno_row=cursor.fetchall()
-        sno=sno_row[0][0]+1
-
+        cursor.execute("SELECT MAX(sno) FROM sessions WHERE uid = ?;", (uid,))
+        try:
+            sno = cursor.fetchone()[0] + 1  # This will be the session number if a new session is started (Will always be unique)
+        except TypeError:
+            # a TypeError occurs when fetchone() returns (None,), which is not subscriptable
+            sno = 1  # The user has not had any sessions yet
         #Start session
         cursor.execute("INSERT INTO sessions VALUES (?, ?, DATE('now'), NULL);", (uid, sno))
         connection.commit()
+        print("Session started.")
+    else:
+        #get session number (a session is already in progress)
+        cursor.execute("SELECT sno FROM sessions WHERE uid=? AND `end` IS NULL", (uid,))
+        sno_row=cursor.fetchall()
+        sno=sno_row[0][0]
+
+    # Check if user is already listening to the song in this session
+    cursor.execute("SELECT * FROM listen WHERE uid = ? AND sid=? AND sno=?;", (uid,song_id,sno))
+    
+    if len(cursor.fetchall())!=0: #user listened to the song before in this session
+        #update count
+        update_query='''UPDATE listen 
+                        SET cnt=cnt+1 
+                        WHERE uid=? AND sid=? AND sno=?'''
+        cursor.execute(update_query,(uid,song_id,sno))
+        connection.commit()
+    else: #first time listening to the song
+        #insert into listen
+        cursor.execute("INSERT INTO listen VALUES(?,?,?,?)",(uid,sno,song_id,1.0))
+        connection.commit()
+    print("Listened to song.")
        
 
-def song_info(order,query,cursor,connection,song_id):
+def song_info(order,query,cursor,song_id):
     query_final="SELECT ID,title,duration FROM (" + query + ") WHERE order_no=:order"
     cursor.execute(query_final,{"order":order})
 
@@ -188,7 +189,7 @@ def addPlaylist(song_id,cursor,connection,uid):
     
     playlistName=input("Enter playlist name: ")
     # Check if playlist exists
-    cursor.execute("SELECT * FROM playlists WHERE title =? AND uid=?",(playlistName,uid))
+    cursor.execute("SELECT * FROM playlists WHERE LOWER(title) =? AND uid=?",(playlistName.lower(),uid))
     
     if (len(cursor.fetchall())==0):
         #playlist does not exist
@@ -201,7 +202,7 @@ def addPlaylist(song_id,cursor,connection,uid):
         connection.commit()
     else:
         #playlist exists
-        cursor.execute("SELECT pid FROM playlists WHERE title =? AND uid=?",(playlistName,uid))
+        cursor.execute("SELECT pid FROM playlists WHERE LOWER(title) =? AND uid=?",(playlistName.lower(),uid))
         pid_row=cursor.fetchall()
         pid=pid_row[0][0]
         cursor.execute("SELECT MAX(sorder) FROM plinclude WHERE pid=?",(pid,))
@@ -212,6 +213,7 @@ def addPlaylist(song_id,cursor,connection,uid):
         INSERT INTO plinclude VALUES (?, ?, ?)'''
     try:
         cursor.execute(insertpl,(pid,song_id,s_order,))
+        print("Song inserted into playlist.")
     except:
         print("Song is already in playlist")
     connection.commit()
