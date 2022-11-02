@@ -108,7 +108,7 @@ def songActions(song_id, cursor, connection, uid):
     else:
         print("Those were none of the options")
 
-def song_info(cursor, connection, song_id):
+def song_info(cursor, song_id):
     query_final = f"SELECT sid, title, duration FROM songs WHERE sid = {song_id}"
     cursor.execute(query_final)
 
